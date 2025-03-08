@@ -533,6 +533,11 @@ nav ul li a:hover:after {
     line-height: 1.6;
 }
 
+.brand-logo.grove-logo {
+    max-width: 90%;
+    max-height: 90%;
+}
+
 /* Market Section */
 .market {
     background-color: #f8f9fd;
