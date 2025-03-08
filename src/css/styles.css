@@ -563,6 +563,12 @@ nav ul li a:hover:after {
     padding: 1.5rem; /* Consistent padding */
 }
 
+.brand-logo.konecranes-logo {
+    max-width: 100%;
+    max-height: 85%;
+    transform: scale(1.15);
+}
+
 /* Market Section */
 .market {
     background-color: #f8f9fd;
