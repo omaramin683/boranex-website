@@ -534,8 +534,9 @@ nav ul li a:hover:after {
 }
 
 .brand-logo.grove-logo {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 100%;     /* Change from 90% to 100% */
+    max-height: 100%;    /* Change from 90% to 100% */
+    transform: scale(1.2); /* Add this to scale the logo 20% larger */
 }
 
 /* Market Section */
