@@ -1,0 +1,13 @@
+{
+  "name": "boranex-website",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "deploy": "npm run build && echo 'Build completed. Files are in the dist/ directory ready for upload.'"
+  },
+  "devDependencies": {"vite": "^5.0.0"}
+}
