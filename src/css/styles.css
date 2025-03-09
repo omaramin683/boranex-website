@@ -575,6 +575,12 @@ nav ul li a:hover:after {
     transform: scale(1.2); /* Slightly larger scale for the JLG logo */
 }
 
+.brand-logo.sennebogen-logo {
+    max-width: 100%;
+    max-height: 85%;
+    transform: scale(1.15); /* Adjust scale as needed based on logo dimensions */
+}
+
 /* Market Section */
 .market {
     background-color: #f8f9fd;
