@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initFadeAnimations();
     initFormValidation();
     initBrandCardInteraction();
-    initContactTabs(); // Add this
-    initEnhancedFormValidation(); // Add this
+    // Remove initContactTabs() if it's there
+    initEnhancedFormValidation(); // This line should be present
 });
 
 /**
@@ -280,51 +280,12 @@ function initBrandCardInteraction() {
     }
 }
 
-/**
- * Tab System for Contact Section
- * Handles switching between different contact form tabs
- */
-function initContactTabs() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabPanes = document.querySelectorAll('.tab-pane');
-    
-    if (tabBtns.length === 0 || tabPanes.length === 0) {
-        return; // Exit if contact tabs don't exist
-    }
-    
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remove active class from all buttons
-            tabBtns.forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Get the target tab
-            const targetTab = this.getAttribute('data-tab');
-            
-            // Hide all tab panes
-            tabPanes.forEach(pane => pane.classList.remove('active'));
-            
-            // Show the targeted tab pane
-            document.getElementById(`${targetTab}-tab`).classList.add('active');
-        });
-    });
-}
 
-/**
- * Enhanced Form Validation
- * Provides detailed validation with visual feedback
- */
 function initEnhancedFormValidation() {
-    const contactForms = document.querySelectorAll('.contact-form-element');
+    const contactForm = document.getElementById('contact-form');
     
-    if (contactForms.length === 0) {
-        return; // Exit if no contact forms exist
-    }
-    
-    contactForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             let isValid = true;
@@ -355,7 +316,7 @@ function initEnhancedFormValidation() {
                 const errorElement = element.parentNode.querySelector('.form-error');
                 
                 // Required field validation
-                if (element.hasAttribute('required') && element.type !== 'checkbox' && element.type !== 'radio' && element.value.trim() === '') {
+                if (element.hasAttribute('required') && element.type !== 'checkbox' && element.value.trim() === '') {
                     isValid = false;
                     element.classList.add('error');
                     if (errorElement) {
@@ -386,20 +347,6 @@ function initEnhancedFormValidation() {
                         }
                     }
                 }
-                
-                // Phone number validation
-                if (element.type === 'tel' && element.value.trim() !== '') {
-                    // Basic phone format check (can be customized for region)
-                    const phoneRegex = /^[+]?[\s./0-9]*[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
-                    if (!phoneRegex.test(element.value)) {
-                        isValid = false;
-                        element.classList.add('error');
-                        if (errorElement) {
-                            errorElement.textContent = `Please enter a valid phone number`;
-                            errorElement.classList.add('visible');
-                        }
-                    }
-                }
             }
             
             // If valid, show success message
@@ -418,7 +365,6 @@ function initEnhancedFormValidation() {
                 this.reset();
                 
                 // After 5 seconds, reset to form view for demo purposes
-                // In production, you would typically submit the form here
                 setTimeout(() => {
                     this.style.display = 'block';
                     if (successMessage) {
@@ -427,5 +373,5 @@ function initEnhancedFormValidation() {
                 }, 5000);
             }
         });
-    });
+    }
 }
