@@ -1,6 +1,6 @@
 /**
  * Boranex Website Main JavaScript
- * Handles interactive elements, animations, and responsive behaviors
+ * Handles interactive elements, animations, responsive behaviors, and UI optimizations
  */
 document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
@@ -10,8 +10,33 @@ document.addEventListener('DOMContentLoaded', () => {
     initFormValidation();
     initBrandCardInteraction();
     initEnhancedFormValidation();
-    enhanceMobileOverlays(); // Add this new function to fix mobile overlay issues
+    enhanceMobileOverlays(); // Added function to fix mobile overlays and desktop tile sizing
+    initDesktopBrandLayouts(); // Added function to fix Konecranes tile size issue
+    
+    // Handle window resize events
+    window.addEventListener('resize', debounce(() => {
+        enhanceMobileOverlays();
+        initDesktopBrandLayouts();
+    }, 250));
 });
+
+/**
+ * Debounce function to limit execution frequency of expensive operations
+ * @param {Function} func - Function to be debounced
+ * @param {number} wait - Delay in ms
+ * @returns {Function} - Debounced function
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
 /**
  * Mobile Navigation Menu Handler
@@ -32,6 +57,7 @@ function initMobileMenu() {
 /**
  * Header Scroll Effect
  * Adds a 'scrolled' class to the header when page is scrolled down
+ * Implements performance optimization via throttling
  */
 function initHeaderScroll() {
     const header = document.querySelector('header');
@@ -61,6 +87,7 @@ function initHeaderScroll() {
 /**
  * Smooth Scrolling for Anchors
  * Enables smooth scrolling to page sections when clicking navigation links
+ * Handles mobile menu state after navigation
  */
 function initSmoothScrolling() {
     const navMenu = document.getElementById('nav-menu');
@@ -100,6 +127,7 @@ function initSmoothScrolling() {
 /**
  * Scroll Animation
  * Uses Intersection Observer to trigger fade-in animations on scroll
+ * Implements performance optimization via IntersectionObserver API
  */
 function initFadeAnimations() {
     const fadeElements = document.querySelectorAll('.fade-in');
@@ -109,11 +137,11 @@ function initFadeAnimations() {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('active');
-                    fadeInObserver.unobserve(entry.target);
+                    fadeInObserver.unobserve(entry.target); // Stop observing once animated
                 }
             });
         }, {
-            threshold: 0.1,
+            threshold: 0.1, // Element is 10% visible
             rootMargin: '0px 0px -50px 0px' // Trigger slightly before element enters viewport
         });
         
@@ -125,7 +153,7 @@ function initFadeAnimations() {
 
 /**
  * Contact Form Validation
- * Validates form inputs before submission
+ * Basic validation with visual feedback for required fields and email format
  */
 function initFormValidation() {
     const contactForm = document.querySelector('.contact-form form');
@@ -150,7 +178,7 @@ function initFormValidation() {
                 }
             }
             
-            // Email validation
+            // Email validation using regex
             const emailInput = this.querySelector('input[type="email"]');
             if (emailInput && emailInput.value.trim() !== '') {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -166,7 +194,7 @@ function initFormValidation() {
                 return;
             }
             
-            // Show success message - would be replaced with actual form submission
+            // Show success message - would be replaced with actual form submission in production
             const successMessage = document.createElement('div');
             successMessage.className = 'form-success-message';
             successMessage.textContent = 'Thank you for your message. We will contact you soon!';
@@ -190,12 +218,13 @@ function initFormValidation() {
 /**
  * Brand Card Touch Interaction
  * Enhances brand cards with touch support for mobile devices
+ * Implements different behavior for touch vs mouse interactions
  */
 function initBrandCardInteraction() {
-    // Touch device detection
+    // Touch device detection using multiple methods for cross-browser compatibility
     const isTouchDevice = ('ontouchstart' in window) || 
-                          (navigator.maxTouchPoints > 0) || 
-                          (navigator.msMaxTouchPoints > 0);
+                         (navigator.maxTouchPoints > 0) || 
+                         (navigator.msMaxTouchPoints > 0);
     
     const brandItems = document.querySelectorAll('.brand-item');
     
@@ -217,12 +246,12 @@ function initBrandCardInteraction() {
         `;
         document.head.appendChild(touchStyle);
         
-        // Global click handler to close any open items when clicking elsewhere
+        // Global touch handler to close any open items when touching elsewhere
         document.addEventListener('touchstart', function(e) {
             let clickedOnCard = false;
             let targetItem = null;
             
-            // Check if the click was on or inside a brand item
+            // Check if the touch was on or inside a brand item
             brandItems.forEach(item => {
                 if (item.contains(e.target)) {
                     clickedOnCard = true;
@@ -230,13 +259,13 @@ function initBrandCardInteraction() {
                 }
             });
             
-            // If clicked outside any card, close all cards
+            // If touched outside any card, close all cards
             if (!clickedOnCard) {
                 brandItems.forEach(item => {
                     item.classList.remove('touch-active');
                 });
             } else {
-                // If clicked on a card, toggle that card and close others
+                // If touched on a card, toggle that card and close others
                 brandItems.forEach(item => {
                     if (item !== targetItem) {
                         item.classList.remove('touch-active');
@@ -244,14 +273,35 @@ function initBrandCardInteraction() {
                 });
                 targetItem.classList.toggle('touch-active');
                 
-                // Prevent scroll issues by stopping propagation only if overlay clicked
+                // Prevent scroll issues by stopping propagation if overlay clicked
                 if (e.target.classList.contains('brand-overlay')) {
                     e.stopPropagation();
                 }
             }
+        }, { passive: false });
+        
+        // Prevent default behavior on brand items to avoid navigation issues
+        brandItems.forEach(item => {
+            item.addEventListener('touchstart', function(e) {
+                // Only prevent default if clicking on the item itself, not on links within
+                if (e.target.tagName !== 'A') {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Allow overlay content to be scrolled
+            const overlay = item.querySelector('.brand-overlay');
+            if (overlay) {
+                overlay.addEventListener('touchmove', function(e) {
+                    // If overlay has scrollable content
+                    if (this.scrollHeight > this.clientHeight) {
+                        e.stopPropagation(); // Prevent parent from receiving event
+                    }
+                }, { passive: true });
+            }
         });
     } else {
-        // Add hover effect improvement for desktop
+        // Desktop hover effect improvement
         brandItems.forEach(item => {
             // Preload overlay on mouseenter for smoother transition
             item.addEventListener('mouseenter', function() {
@@ -278,7 +328,8 @@ function initBrandCardInteraction() {
 
 /**
  * Enhanced Form Validation
- * More sophisticated form validation with visual feedback
+ * More sophisticated form validation with improved visual feedback
+ * Handles different input types (text, email, checkbox)
  */
 function initEnhancedFormValidation() {
     const contactForm = document.getElementById('contact-form');
@@ -364,6 +415,7 @@ function initEnhancedFormValidation() {
                 this.reset();
                 
                 // After 5 seconds, reset to form view for demo purposes
+                // In production, this would be replaced with an AJAX form submission
                 setTimeout(() => {
                     this.style.display = 'block';
                     if (successMessage) {
@@ -376,13 +428,61 @@ function initEnhancedFormValidation() {
 }
 
 /**
- * Enhance Mobile Overlays
- * Improves overlay handling on mobile devices
+ * Safari-specific touch enhancements for brand cards
+ * Improves overlay visibility on iPhone devices
+ * Uses vendor detection and long-press behavior for better UX
+ */
+function enhanceSafariTouchInteraction() {
+    // Check if running on iOS Safari
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    if (isIOS) {
+        const brandItems = document.querySelectorAll('.brand-item');
+        
+        brandItems.forEach(item => {
+            // Add long press handler for Safari
+            let pressTimer;
+            
+            item.addEventListener('touchstart', function() {
+                pressTimer = setTimeout(() => {
+                    // Force overlay to be visible
+                    const overlay = this.querySelector('.brand-overlay');
+                    if (overlay) {
+                        overlay.style.opacity = '1';
+                        overlay.style.visibility = 'visible';
+                    }
+                    
+                    // Dim the logo
+                    const logo = this.querySelector('.brand-logo');
+                    if (logo) {
+                        logo.style.opacity = '0.05';
+                    }
+                }, 150);
+            });
+            
+            // Clear timer if touch ends quickly
+            item.addEventListener('touchend', function() {
+                clearTimeout(pressTimer);
+            });
+            
+            // Clear timer if touch moves too much
+            item.addEventListener('touchmove', function() {
+                clearTimeout(pressTimer);
+            });
+        });
+    }
+}
+
+/**
+ * Mobile Overlay Enhancement
+ * Improves mobile overlay handling and fixes text overlap issues
+ * Dynamically adjusts card heights based on screen size
  */
 function enhanceMobileOverlays() {
     const isMobile = window.innerWidth <= 576;
     
     if (isMobile) {
+        const brandItems = document.querySelectorAll('.brand-item');
         const overlays = document.querySelectorAll('.brand-overlay');
         
         // Make sure overlays can be scrolled without closing
@@ -401,28 +501,7 @@ function enhanceMobileOverlays() {
             }, { passive: true });
         });
         
-        // Handle resize events to adapt height dynamically
-        window.addEventListener('resize', function() {
-            const brandItems = document.querySelectorAll('.brand-item');
-            
-            // Adjust heights based on screen width
-            if (window.innerWidth <= 375) {
-                brandItems.forEach(item => {
-                    item.style.height = '270px';
-                });
-            } else if (window.innerWidth <= 428) {
-                brandItems.forEach(item => {
-                    item.style.height = '260px';
-                });
-            } else if (window.innerWidth <= 576) {
-                brandItems.forEach(item => {
-                    item.style.height = '250px';
-                });
-            }
-        });
-        
-        // Initial height adjustment
-        const brandItems = document.querySelectorAll('.brand-item');
+        // Adjust heights based on screen width
         if (window.innerWidth <= 375) {
             brandItems.forEach(item => {
                 item.style.height = '270px';
@@ -438,3 +517,55 @@ function enhanceMobileOverlays() {
         }
     }
 }
+
+/**
+ * Desktop Brand Layouts
+ * Fixes the Konecranes tile size issue on desktop
+ * Ensures consistent sizing across different brand categories
+ */
+function initDesktopBrandLayouts() {
+    // Only run on desktop screens
+    if (window.innerWidth >= 768) {
+        const brandGrids = document.querySelectorAll('.brands-grid');
+        
+        brandGrids.forEach(grid => {
+            // Check if this is a grid with a single brand item
+            if (grid.children.length === 1) {
+                // Get the parent category to check what kind of brand it is
+                const parentCategory = grid.closest('.brand-category');
+                
+                if (parentCategory) {
+                    const categoryTitle = parentCategory.querySelector('h3')?.textContent.toLowerCase() || '';
+                    const isMaterialHandling = categoryTitle.includes('material handling');
+                    
+                    // Apply desktop styling for single items
+                    if (isMaterialHandling) {
+                        // Special handling for Konecranes (Material Handling section)
+                        grid.style.display = 'flex';
+                        grid.style.justifyContent = 'center';
+                        
+                        const brandItem = grid.children[0];
+                        if (brandItem) {
+                            brandItem.style.maxWidth = '50%';
+                            brandItem.style.width = '100%';
+                            brandItem.style.margin = '0 auto';
+                        }
+                    } else {
+                        // General handling for other single brand items
+                        grid.style.gridTemplateColumns = "repeat(2, 1fr)";
+                        
+                        const brandItem = grid.children[0];
+                        if (brandItem) {
+                            brandItem.style.gridColumn = "1";
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Initialize Safari-specific enhancements
+document.addEventListener('DOMContentLoaded', () => {
+    enhanceSafariTouchInteraction();
+});
