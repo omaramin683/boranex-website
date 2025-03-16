@@ -375,3 +375,56 @@ function initEnhancedFormValidation() {
         });
     }
 }
+
+/**
+ * Safari-specific touch enhancements for brand cards
+ * Improves overlay visibility on iPhone devices
+ */
+function enhanceSafariTouchInteraction() {
+    // Check if running on iOS Safari
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    if (isIOS) {
+        const brandItems = document.querySelectorAll('.brand-item');
+        
+        brandItems.forEach(item => {
+            // Add long press handler for Safari
+            let pressTimer;
+            
+            item.addEventListener('touchstart', function() {
+                pressTimer = setTimeout(() => {
+                    // Force overlay to be visible
+                    const overlay = this.querySelector('.brand-overlay');
+                    if (overlay) {
+                        overlay.style.opacity = '1';
+                        overlay.style.visibility = 'visible';
+                    }
+                    
+                    // Dim the logo
+                    const logo = this.querySelector('.brand-logo');
+                    if (logo) {
+                        logo.style.opacity = '0.05';
+                    }
+                }, 150);
+            });
+            
+            // Clear timer if touch ends quickly
+            item.addEventListener('touchend', function() {
+                clearTimeout(pressTimer);
+            });
+            
+            // Clear timer if touch moves too much
+            item.addEventListener('touchmove', function() {
+                clearTimeout(pressTimer);
+            });
+        });
+    }
+}
+
+// Call this function on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Other initialization functions...
+    
+    // Add the Safari enhancement
+    enhanceSafariTouchInteraction();
+});

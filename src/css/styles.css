@@ -1111,3 +1111,108 @@ textarea.form-control {
         margin-top: 3px;
     }
 }
+
+/* Mobile Optimizations for Safari */
+@media screen and (max-width: 428px) {
+    /* Improve brand cards for mobile */
+    .brand-item {
+        height: auto;
+        min-height: 180px;
+        margin-bottom: 1.2rem;
+    }
+    
+    /* Better overlay text readability */
+    .brand-overlay {
+        padding: 1.2rem;
+        background-color: rgba(0, 32, 91, 0.96); /* Darker overlay for better contrast */
+    }
+    
+    .brand-overlay h4 {
+        font-size: 1.3rem;
+        margin-bottom: 0.6rem;
+        padding-bottom: 8px;
+    }
+    
+    .brand-overlay p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        max-width: 100%;
+    }
+    
+    /* Adjust logo sizing for mobile */
+    .brand-logo {
+        max-width: 70%;
+        max-height: 70%;
+    }
+    
+    /* Add touch feedback on mobile */
+    .brand-item:active {
+        transform: scale(0.98);
+    }
+    
+    /* Improve section spacing */
+    .section {
+        padding: 3rem 0;
+    }
+    
+    .brand-category {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Fix logo specific issues */
+    .brand-logo.grove-logo, 
+    .brand-logo.national-logo,
+    .brand-logo.konecranes-logo, 
+    .brand-logo.bridgestone-logo,
+    .brand-logo.federal-signal-logo {
+        transform: scale(1);
+        max-width: 85%;
+        max-height: 80%;
+    }
+}
+
+/* iPhone Pro Max Specific Fixes */
+@media screen and (min-width: 390px) and (max-width: 428px) {
+    /* Brand Card Touch Interaction Optimization */
+    .brand-item.touch-active .brand-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Force visible overlays on touch and hold */
+    .brand-item:active .brand-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Stronger opacity reduction for background logos */
+    .brand-item.touch-active .brand-logo,
+    .brand-item:active .brand-logo {
+        opacity: 0.05;
+    }
+    
+    /* Fix nested scrolling issues on Safari */
+    .brand-item {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+    }
+}
+
+/* Specifically target Safari on iOS */
+@supports (-webkit-touch-callout: none) {
+    .brand-overlay {
+        /* Improve Safari rendering of overlays */
+        -webkit-backdrop-filter: blur(0.5px);
+        backdrop-filter: blur(0.5px);
+    }
+    
+    /* Fix Safari overflow issues */
+    .brand-item {
+        transform: translateZ(0);
+    }
+    
+    /* Prevent scrolling conflicts */
+    .brands-container {
+        overscroll-behavior: contain;
+    }
+}
