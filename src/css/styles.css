@@ -403,16 +403,25 @@ nav ul li a:hover:after {
     display: inline-block;
 }
 
+/* Fix for Konecranes and other brand layouts */
 .brands-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
+    max-width: 100%;
 }
 
-/* For brand categories with only one item */
-.brand-category .brands-grid:only-child {
-    display: flex;
-    justify-content: center;
+@media (min-width: 768px) {
+    .brands-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Make single items take up only half the space */
+    .brands-grid div:only-child {
+        max-width: 100%;
+        margin: 0 auto;
+        grid-column: 1;
+    }
 }
 
 .brand-item {
@@ -424,7 +433,7 @@ nav ul li a:hover:after {
     border-left: 3px solid transparent;
     overflow: hidden;
     position: relative;
-    height: 220px;
+    height: 240px; /* Increased to accommodate more text */
 }
 
 .brand-item:hover {
@@ -468,6 +477,7 @@ nav ul li a:hover:after {
     transition: opacity 0.4s ease;
     color: white;
     z-index: 1;
+    overflow-y: auto; /* Added to handle overflow with scrolling */
 }
 
 .brand-item:hover .brand-overlay {
@@ -543,36 +553,14 @@ nav ul li a:hover:after {
     line-height: 1.6;
 }
 
-/* Brand-specific logo styling */
-.brand-logo.grove-logo {
-    max-width: 100%;
-    max-height: 85%;
-    transform: scale(1.35);
-}
-
-.brand-logo.national-logo {
-    max-width: 100%;
-    max-height: 90%;
-    transform: scale(1.3) translateY(-15px);
-    margin-top: -5px;
-}
-
-.brand-logo.konecranes-logo {
-    max-width: 100%;
-    max-height: 85%;
-    transform: scale(1.3);
-}
-
-.brand-logo.bridgestone-logo {
-    max-width: 100%;
-    max-height: 85%;
-    transform: scale(1.2);
-}
-
+/* Brand-specific logo styling - Modified to avoid transform issues */
+.brand-logo.grove-logo,
+.brand-logo.national-logo,
+.brand-logo.konecranes-logo,
+.brand-logo.bridgestone-logo,
 .brand-logo.federal-signal-logo {
-    max-width: 100%;
-    max-height: 85%;
-    transform: scale(1.2);
+    max-width: 75%;
+    max-height: 75%;
 }
 
 /* For all logo containers in the crane solutions section */
@@ -1054,8 +1042,13 @@ textarea.form-control {
         font-size: 1.1rem;
     }
     
-    .service-card, .brand-item, .market-card {
+    .service-card, .market-card {
         padding: 1.5rem;
+    }
+
+    .brand-item {
+        padding: 0;
+        height: 230px;
     }
     
     .contact-form {
@@ -1110,39 +1103,63 @@ textarea.form-control {
     .consent-checkbox input[type="checkbox"] {
         margin-top: 3px;
     }
+    
+    /* Reduce brand overlay text size */
+    .brand-overlay h4 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 6px;
+    }
+    
+    .brand-overlay p {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin-top: 0.3rem;
+    }
+    
+    /* Improve padding for better content fit */
+    .brand-overlay {
+        padding: 1rem;
+    }
+    
+    /* Make brand items taller on mobile to accommodate text */
+    .brand-item {
+        height: 250px;
+    }
 }
 
-/* Mobile Optimizations for Safari */
+/* Mobile Optimizations */
 @media screen and (max-width: 428px) {
     /* Improve brand cards for mobile */
     .brand-item {
-        height: auto;
-        min-height: 180px;
+        height: 260px;
+        min-height: 240px;
         margin-bottom: 1.2rem;
     }
     
     /* Better overlay text readability */
     .brand-overlay {
-        padding: 1.2rem;
+        padding: 1rem;
         background-color: rgba(0, 32, 91, 0.96); /* Darker overlay for better contrast */
+        overflow-y: auto; /* Enable scrolling for overflow content */
     }
     
     .brand-overlay h4 {
-        font-size: 1.3rem;
-        margin-bottom: 0.6rem;
-        padding-bottom: 8px;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 6px;
     }
     
     .brand-overlay p {
-        font-size: 0.9rem;
-        line-height: 1.5;
+        font-size: 0.85rem;
+        line-height: 1.4;
         max-width: 100%;
     }
     
     /* Adjust logo sizing for mobile */
     .brand-logo {
-        max-width: 70%;
-        max-height: 70%;
+        max-width: 65%;
+        max-height: 65%;
     }
     
     /* Add touch feedback on mobile */
@@ -1152,49 +1169,51 @@ textarea.form-control {
     
     /* Improve section spacing */
     .section {
-        padding: 3rem 0;
+        padding: 2.5rem 0;
     }
     
     .brand-category {
         margin-bottom: 1.5rem;
     }
     
-    /* Fix logo specific issues */
+    /* Fix logo specific issues by removing transforms */
     .brand-logo.grove-logo, 
     .brand-logo.national-logo,
     .brand-logo.konecranes-logo, 
     .brand-logo.bridgestone-logo,
     .brand-logo.federal-signal-logo {
-        transform: scale(1);
-        max-width: 85%;
-        max-height: 80%;
+        transform: none;
+        max-width: 65%;
+        max-height: 65%;
     }
 }
 
-/* iPhone Pro Max Specific Fixes */
-@media screen and (min-width: 390px) and (max-width: 428px) {
-    /* Brand Card Touch Interaction Optimization */
-    .brand-item.touch-active .brand-overlay {
-        opacity: 1;
-        visibility: visible;
+/* Extra small screens */
+@media (max-width: 375px) {
+    .brand-overlay h4 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
     }
     
-    /* Force visible overlays on touch and hold */
-    .brand-item:active .brand-overlay {
-        opacity: 1;
-        visibility: visible;
+    .brand-overlay p {
+        font-size: 0.8rem;
+        line-height: 1.3;
     }
     
-    /* Stronger opacity reduction for background logos */
-    .brand-item.touch-active .brand-logo,
-    .brand-item:active .brand-logo {
-        opacity: 0.05;
+    /* Further reduce padding */
+    .brand-overlay {
+        padding: 0.8rem;
     }
     
-    /* Fix nested scrolling issues on Safari */
+    /* Adjust logo size on smallest screens */
+    .brand-logo {
+        max-width: 60%;
+        max-height: 60%;
+    }
+    
+    /* Ensure height is sufficient */
     .brand-item {
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: none;
+        height: 270px;
     }
 }
 
@@ -1204,6 +1223,8 @@ textarea.form-control {
         /* Improve Safari rendering of overlays */
         -webkit-backdrop-filter: blur(0.5px);
         backdrop-filter: blur(0.5px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     /* Fix Safari overflow issues */

@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initFadeAnimations();
     initFormValidation();
     initBrandCardInteraction();
-    // Remove initContactTabs() if it's there
-    initEnhancedFormValidation(); // This line should be present
+    initEnhancedFormValidation();
+    enhanceMobileOverlays(); // Add this new function to fix mobile overlay issues
 });
 
 /**
@@ -209,9 +209,10 @@ function initBrandCardInteraction() {
         touchStyle.textContent = `
             .brand-item.touch-active .brand-overlay {
                 opacity: 1;
+                visibility: visible;
             }
             .brand-item.touch-active .brand-logo {
-                opacity: 0.2;
+                opacity: 0.1;
             }
         `;
         document.head.appendChild(touchStyle);
@@ -242,17 +243,12 @@ function initBrandCardInteraction() {
                     }
                 });
                 targetItem.classList.toggle('touch-active');
-            }
-        });
-        
-        // Prevent default behavior on brand items to avoid navigation issues
-        brandItems.forEach(item => {
-            item.addEventListener('touchstart', function(e) {
-                // Only prevent default if clicking on the item itself, not on links within
-                if (e.target.tagName !== 'A') {
-                    e.preventDefault();
+                
+                // Prevent scroll issues by stopping propagation only if overlay clicked
+                if (e.target.classList.contains('brand-overlay')) {
+                    e.stopPropagation();
                 }
-            });
+            }
         });
     } else {
         // Add hover effect improvement for desktop
@@ -280,7 +276,10 @@ function initBrandCardInteraction() {
     }
 }
 
-
+/**
+ * Enhanced Form Validation
+ * More sophisticated form validation with visual feedback
+ */
 function initEnhancedFormValidation() {
     const contactForm = document.getElementById('contact-form');
     
@@ -377,54 +376,65 @@ function initEnhancedFormValidation() {
 }
 
 /**
- * Safari-specific touch enhancements for brand cards
- * Improves overlay visibility on iPhone devices
+ * Enhance Mobile Overlays
+ * Improves overlay handling on mobile devices
  */
-function enhanceSafariTouchInteraction() {
-    // Check if running on iOS Safari
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+function enhanceMobileOverlays() {
+    const isMobile = window.innerWidth <= 576;
     
-    if (isIOS) {
-        const brandItems = document.querySelectorAll('.brand-item');
+    if (isMobile) {
+        const overlays = document.querySelectorAll('.brand-overlay');
         
-        brandItems.forEach(item => {
-            // Add long press handler for Safari
-            let pressTimer;
+        // Make sure overlays can be scrolled without closing
+        overlays.forEach(overlay => {
+            // Allow overlay content to be scrolled
+            overlay.addEventListener('touchmove', function(e) {
+                // If overlay has scrollable content
+                if (this.scrollHeight > this.clientHeight) {
+                    e.stopPropagation();
+                }
+            }, { passive: true });
             
-            item.addEventListener('touchstart', function() {
-                pressTimer = setTimeout(() => {
-                    // Force overlay to be visible
-                    const overlay = this.querySelector('.brand-overlay');
-                    if (overlay) {
-                        overlay.style.opacity = '1';
-                        overlay.style.visibility = 'visible';
-                    }
-                    
-                    // Dim the logo
-                    const logo = this.querySelector('.brand-logo');
-                    if (logo) {
-                        logo.style.opacity = '0.05';
-                    }
-                }, 150);
-            });
-            
-            // Clear timer if touch ends quickly
-            item.addEventListener('touchend', function() {
-                clearTimeout(pressTimer);
-            });
-            
-            // Clear timer if touch moves too much
-            item.addEventListener('touchmove', function() {
-                clearTimeout(pressTimer);
-            });
+            // Fix issue with text selection in overlays
+            overlay.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
         });
+        
+        // Handle resize events to adapt height dynamically
+        window.addEventListener('resize', function() {
+            const brandItems = document.querySelectorAll('.brand-item');
+            
+            // Adjust heights based on screen width
+            if (window.innerWidth <= 375) {
+                brandItems.forEach(item => {
+                    item.style.height = '270px';
+                });
+            } else if (window.innerWidth <= 428) {
+                brandItems.forEach(item => {
+                    item.style.height = '260px';
+                });
+            } else if (window.innerWidth <= 576) {
+                brandItems.forEach(item => {
+                    item.style.height = '250px';
+                });
+            }
+        });
+        
+        // Initial height adjustment
+        const brandItems = document.querySelectorAll('.brand-item');
+        if (window.innerWidth <= 375) {
+            brandItems.forEach(item => {
+                item.style.height = '270px';
+            });
+        } else if (window.innerWidth <= 428) {
+            brandItems.forEach(item => {
+                item.style.height = '260px';
+            });
+        } else if (window.innerWidth <= 576) {
+            brandItems.forEach(item => {
+                item.style.height = '250px';
+            });
+        }
     }
 }
-
-// Call this function on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Other initialization functions...
-    
-    // Add the Safari enhancement
-    enhanceSafariTouchInteraction();
-});
