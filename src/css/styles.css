@@ -468,16 +468,16 @@ nav ul li a:hover:after {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--overlay-dark);
+    background-color: var(--overlay-dark); /* This is the dark blue overlay */
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: 1.8rem;
     opacity: 0;
     transition: opacity 0.4s ease;
-    color: white;
+    color: white; /* Ensure all text is white by default */
     z-index: 1;
-    overflow-y: auto; /* Added to handle overflow with scrolling */
+    overflow-y: auto;
 }
 
 .brand-item:hover .brand-overlay {
@@ -491,7 +491,7 @@ nav ul li a:hover:after {
 
 /* Typography Improvements */
 .brand-overlay h4 {
-    color: white;
+    color: white; /* Ensure header is white */
     margin-bottom: 1rem;
     font-size: 1.5rem;
     font-weight: 600;
@@ -517,7 +517,7 @@ nav ul li a:hover:after {
 }
 
 .brand-overlay p {
-    color: rgba(255, 255, 255, 0.9);
+    color: white; /* Ensure paragraph is pure white */
     font-size: 1rem;
     line-height: 1.7;
     margin-top: 0.5rem;
@@ -1106,15 +1106,21 @@ textarea.form-control {
     
     /* Reduce brand overlay text size */
     .brand-overlay h4 {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-        padding-bottom: 6px;
+        color: white !important;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 12px;
     }
     
     .brand-overlay p {
         font-size: 0.85rem;
         line-height: 1.4;
         margin-top: 0.3rem;
+        color: white !important;
     }
     
     /* Improve padding for better content fit */
