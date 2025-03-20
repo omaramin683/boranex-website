@@ -501,6 +501,24 @@ nav ul li a:hover:after {
     padding-bottom: 12px;
 }
 
+/* FIX: Add stronger specificity to ensure white text in overlays */
+.brand-item .brand-overlay h4 {
+    color: white !important;
+}
+
+.brand-item .brand-overlay p {
+    color: white !important;
+}
+
+.brand-item:hover .brand-overlay h4 {
+    color: white !important;
+}
+
+.brand-item:hover .brand-overlay p {
+    color: white !important;
+}
+/* END FIX */
+
 .brand-overlay h4:after {
     content: '';
     position: absolute;
