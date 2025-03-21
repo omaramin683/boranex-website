@@ -9,9 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initFadeAnimations();
     initFormValidation();
     initBrandCardInteraction();
+    initProductCarousel(); // Added for new Products section
     initEnhancedFormValidation();
-    enhanceMobileOverlays(); // Added function to fix mobile overlays and desktop tile sizing
-    initDesktopBrandLayouts(); // Added function to fix Konecranes tile size issue
+    enhanceMobileOverlays();
+    initDesktopBrandLayouts();
     
     // Handle window resize events
     window.addEventListener('resize', debounce(() => {
@@ -327,6 +328,232 @@ function initBrandCardInteraction() {
 }
 
 /**
+ * Product Carousel Functionality
+ * Handles the navigation and animation of the products carousel
+ */
+function initProductCarousel() {
+    const slides = document.querySelectorAll('.product-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    const prevButtons = document.querySelectorAll('.slide-arrow.prev');
+    const nextButtons = document.querySelectorAll('.slide-arrow.next');
+    
+    if (!slides.length) return;
+    
+    let currentSlide = 1;
+    const totalSlides = slides.length;
+    
+    // Initialize slide visibility
+    updateSlideVisibility();
+    
+    // Add event listeners to indicators
+    indicators.forEach(indicator => {
+        indicator.addEventListener('click', function() {
+            const targetSlide = parseInt(this.getAttribute('data-slide'));
+            if (targetSlide !== currentSlide) {
+                navigateToSlide(targetSlide);
+            }
+        });
+    });
+    
+    // Add event listeners to arrow buttons
+    prevButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.hasAttribute('disabled')) {
+                navigateToSlide(currentSlide - 1);
+            }
+        });
+    });
+    
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.hasAttribute('disabled')) {
+                navigateToSlide(currentSlide + 1);
+            }
+        });
+    });
+    
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        // Only process keyboard events if the products section is in viewport
+        const productsSection = document.getElementById('products');
+        if (!isElementInViewport(productsSection)) return;
+        
+        if (e.key === 'ArrowLeft' && currentSlide > 1) {
+            navigateToSlide(currentSlide - 1);
+        } else if (e.key === 'ArrowRight' && currentSlide < totalSlides) {
+            navigateToSlide(currentSlide + 1);
+        }
+    });
+    
+    // Function to navigate to a specific slide
+    function navigateToSlide(targetSlide) {
+        if (targetSlide < 1 || targetSlide > totalSlides || targetSlide === currentSlide) return;
+        
+        // Add animation classes
+        const currentSlideEl = document.querySelector(`.product-slide[data-slide="${currentSlide}"]`);
+        const targetSlideEl = document.querySelector(`.product-slide[data-slide="${targetSlide}"]`);
+        
+        // Set animation direction based on navigation direction
+        if (targetSlide > currentSlide) {
+            currentSlideEl.classList.add('animate-out');
+            // Wait for animation to complete before showing new slide
+            setTimeout(() => {
+                currentSlideEl.classList.remove('animate-out');
+                currentSlideEl.style.opacity = '0';
+                currentSlideEl.style.visibility = 'hidden';
+                currentSlideEl.style.position = 'absolute';
+                currentSlideEl.style.zIndex = '0';
+                currentSlideEl.style.pointerEvents = 'none';
+                
+                targetSlideEl.classList.add('animate-in');
+                targetSlideEl.style.opacity = '1';
+                targetSlideEl.style.visibility = 'visible';
+                targetSlideEl.style.position = 'relative';
+                targetSlideEl.style.zIndex = '1';
+                targetSlideEl.style.pointerEvents = 'auto';
+                
+                setTimeout(() => {
+                    targetSlideEl.classList.remove('animate-in');
+                }, 500);
+                
+                // Update current slide
+                currentSlide = targetSlide;
+                updateSlideVisibility();
+            }, 300);
+        } else {
+            currentSlideEl.style.opacity = '0';
+            currentSlideEl.style.visibility = 'hidden';
+            currentSlideEl.style.position = 'absolute';
+            currentSlideEl.style.zIndex = '0';
+            currentSlideEl.style.pointerEvents = 'none';
+            
+            targetSlideEl.classList.add('animate-in');
+            targetSlideEl.style.opacity = '1';
+            targetSlideEl.style.visibility = 'visible';
+            targetSlideEl.style.position = 'relative';
+            targetSlideEl.style.zIndex = '1';
+            targetSlideEl.style.pointerEvents = 'auto';
+            
+            setTimeout(() => {
+                targetSlideEl.classList.remove('animate-in');
+            }, 500);
+            
+            // Update current slide
+            currentSlide = targetSlide;
+            updateSlideVisibility();
+        }
+    }
+    
+    // Function to update slide visibility, indicators, and buttons
+    function updateSlideVisibility() {
+        // Update indicators
+        indicators.forEach(indicator => {
+            const slideNum = parseInt(indicator.getAttribute('data-slide'));
+            if (slideNum === currentSlide) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+        
+        // Update arrows
+        prevButtons.forEach(button => {
+            if (currentSlide === 1) {
+                button.setAttribute('disabled', '');
+            } else {
+                button.removeAttribute('disabled');
+            }
+        });
+        
+        nextButtons.forEach(button => {
+            if (currentSlide === totalSlides) {
+                button.setAttribute('disabled', '');
+            } else {
+                button.removeAttribute('disabled');
+            }
+        });
+    }
+    
+    // Touch swipe functionality for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    // Check if device supports touch
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (isTouch) {
+        slides.forEach(slide => {
+            slide.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            slide.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+        });
+    }
+    
+    // Handle the swipe
+    function handleSwipe() {
+        const minSwipeDistance = 50;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        if (swipeDistance > minSwipeDistance && currentSlide > 1) {
+            // Swiped right, go to previous slide
+            navigateToSlide(currentSlide - 1);
+        } else if (swipeDistance < -minSwipeDistance && currentSlide < totalSlides) {
+            // Swiped left, go to next slide
+            navigateToSlide(currentSlide + 1);
+        }
+    }
+    
+    // Preload all product images for smooth transitions
+    function preloadImages() {
+        const images = document.querySelectorAll('.product-image img');
+        images.forEach(img => {
+            const imgSrc = img.getAttribute('src');
+            if (imgSrc) {
+                const preloadImg = new Image();
+                preloadImg.src = imgSrc;
+            }
+        });
+    }
+    
+    // Check if element is in viewport
+    function isElementInViewport(el) {
+        if (!el) return false;
+        
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.bottom >= 0 &&
+            rect.left <= (window.innerWidth || document.documentElement.clientWidth) &&
+            rect.right >= 0
+        );
+    }
+    
+    // Initialize by preloading images
+    preloadImages();
+    
+    // Add resize handler to ensure proper layout on screen size changes
+    window.addEventListener('resize', debounce(() => {
+        // Force redraw of slides on resize to ensure proper layout
+        slides.forEach(slide => {
+            if (parseInt(slide.getAttribute('data-slide')) === currentSlide) {
+                slide.style.opacity = '1';
+                slide.style.visibility = 'visible';
+                slide.style.position = 'relative';
+            } else {
+                slide.style.opacity = '0';
+                slide.style.visibility = 'hidden';
+                slide.style.position = 'absolute';
+            }
+        });
+    }, 250));
+}
+
+/**
  * Enhanced Form Validation
  * More sophisticated form validation with improved visual feedback
  * Handles different input types (text, email, checkbox)
@@ -428,52 +655,6 @@ function initEnhancedFormValidation() {
 }
 
 /**
- * Safari-specific touch enhancements for brand cards
- * Improves overlay visibility on iPhone devices
- * Uses vendor detection and long-press behavior for better UX
- */
-function enhanceSafariTouchInteraction() {
-    // Check if running on iOS Safari
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
-    if (isIOS) {
-        const brandItems = document.querySelectorAll('.brand-item');
-        
-        brandItems.forEach(item => {
-            // Add long press handler for Safari
-            let pressTimer;
-            
-            item.addEventListener('touchstart', function() {
-                pressTimer = setTimeout(() => {
-                    // Force overlay to be visible
-                    const overlay = this.querySelector('.brand-overlay');
-                    if (overlay) {
-                        overlay.style.opacity = '1';
-                        overlay.style.visibility = 'visible';
-                    }
-                    
-                    // Dim the logo
-                    const logo = this.querySelector('.brand-logo');
-                    if (logo) {
-                        logo.style.opacity = '0.05';
-                    }
-                }, 150);
-            });
-            
-            // Clear timer if touch ends quickly
-            item.addEventListener('touchend', function() {
-                clearTimeout(pressTimer);
-            });
-            
-            // Clear timer if touch moves too much
-            item.addEventListener('touchmove', function() {
-                clearTimeout(pressTimer);
-            });
-        });
-    }
-}
-
-/**
  * Mobile Overlay Enhancement
  * Improves mobile overlay handling and fixes text overlap issues
  * Dynamically adjusts card heights based on screen size
@@ -569,3 +750,49 @@ function initDesktopBrandLayouts() {
 document.addEventListener('DOMContentLoaded', () => {
     enhanceSafariTouchInteraction();
 });
+
+/**
+ * Safari-specific touch enhancements for brand cards
+ * Improves overlay visibility on iPhone devices
+ * Uses vendor detection and long-press behavior for better UX
+ */
+function enhanceSafariTouchInteraction() {
+    // Check if running on iOS Safari
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    if (isIOS) {
+        const brandItems = document.querySelectorAll('.brand-item');
+        
+        brandItems.forEach(item => {
+            // Add long press handler for Safari
+            let pressTimer;
+            
+            item.addEventListener('touchstart', function() {
+                pressTimer = setTimeout(() => {
+                    // Force overlay to be visible
+                    const overlay = this.querySelector('.brand-overlay');
+                    if (overlay) {
+                        overlay.style.opacity = '1';
+                        overlay.style.visibility = 'visible';
+                    }
+                    
+                    // Dim the logo
+                    const logo = this.querySelector('.brand-logo');
+                    if (logo) {
+                        logo.style.opacity = '0.05';
+                    }
+                }, 150);
+            });
+            
+            // Clear timer if touch ends quickly
+            item.addEventListener('touchend', function() {
+                clearTimeout(pressTimer);
+            });
+            
+            // Clear timer if touch moves too much
+            item.addEventListener('touchmove', function() {
+                clearTimeout(pressTimer);
+            });
+        });
+    }
+}
