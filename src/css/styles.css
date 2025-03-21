@@ -1267,9 +1267,6 @@ textarea.form-control {
     background-color: #f8f9fd;
     padding: 60px 0;
     position: relative;
-    min-height: 800px;
-    display: flex;
-    align-items: center;
 }
 
 .products:before {
@@ -1283,6 +1280,46 @@ textarea.form-control {
     pointer-events: none;
 }
 
+/* Brand Section Styling */
+.brand-section {
+    margin-bottom: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.brand-section:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.brand-header {
+    margin-bottom: 2rem;
+}
+
+.brand-header h3 {
+    font-size: 2.2rem;
+    color: var(--primary);
+    padding-bottom: 12px;
+    position: relative;
+    display: inline-block;
+}
+
+.brand-header h3:after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background-color: var(--secondary);
+    bottom: 0;
+    left: 0;
+    transition: width 0.3s ease;
+}
+
+.brand-section:hover .brand-header h3:after {
+    width: 100%;
+}
+
+/* Product Carousel Styling */
 .product-carousel {
     width: 100%;
     max-width: 1200px;
@@ -1294,7 +1331,7 @@ textarea.form-control {
 .product-slides {
     position: relative;
     width: 100%;
-    height: 100%;
+    min-height: 540px;
 }
 
 .product-slide {
@@ -1360,6 +1397,10 @@ textarea.form-control {
     transition: transform 0.5s ease;
 }
 
+.product-slide:hover .product-image img {
+    transform: scale(1.05);
+}
+
 .product-description {
     padding: 0 20px;
 }
@@ -1377,6 +1418,7 @@ textarea.form-control {
     justify-content: space-between;
     padding: 20px 0;
     position: relative;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .slide-counter {
@@ -1456,12 +1498,21 @@ textarea.form-control {
         width: 45%;
         padding: 0;
     }
+    
+    .product-slides {
+        min-height: 600px;
+    }
+}
+
+@media (min-width: 992px) {
+    .product-slides {
+        min-height: 500px;
+    }
 }
 
 @media (max-width: 767px) {
-    .products {
-        min-height: auto;
-        padding: 40px 0;
+    .brand-header h3 {
+        font-size: 1.8rem;
     }
     
     .product-title {
@@ -1503,6 +1554,10 @@ textarea.form-control {
 }
 
 @media (max-width: 576px) {
+    .brand-header h3 {
+        font-size: 1.6rem;
+    }
+    
     .product-title {
         font-size: 1.8rem;
     }
@@ -1527,9 +1582,13 @@ textarea.form-control {
         width: 35px;
         height: 35px;
     }
+    
+    .brand-section {
+        margin-bottom: 3rem;
+    }
 }
 
-/* Animation class for slide transitions */
+/* Animation classes for slide transitions */
 .product-slide.animate-in {
     animation: fadeIn 0.5s ease forwards;
 }

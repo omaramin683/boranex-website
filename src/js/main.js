@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFadeAnimations();
     initFormValidation();
     initBrandCardInteraction();
-    initProductCarousel(); // Added for new Products section
+    initProductCarousels(); // Updated to support multiple slideshows
     initEnhancedFormValidation();
     enhanceMobileOverlays();
     initDesktopBrandLayouts();
@@ -328,77 +328,113 @@ function initBrandCardInteraction() {
 }
 
 /**
- * Product Carousel Functionality
- * Handles the navigation and animation of the products carousel
+ * Multiple Product Carousels Functionality
+ * Handles navigation and animation for multiple product slideshows
+ * Each slideshow operates independently with its own state
  */
-function initProductCarousel() {
-    const slides = document.querySelectorAll('.product-slide');
-    const indicators = document.querySelectorAll('.indicator');
-    const prevButtons = document.querySelectorAll('.slide-arrow.prev');
-    const nextButtons = document.querySelectorAll('.slide-arrow.next');
+function initProductCarousels() {
+    // Find all product slideshow containers
+    const slideshowContainers = document.querySelectorAll('.product-slides');
     
-    if (!slides.length) return;
+    if (!slideshowContainers.length) return;
     
-    let currentSlide = 1;
-    const totalSlides = slides.length;
-    
-    // Initialize slide visibility
-    updateSlideVisibility();
-    
-    // Add event listeners to indicators
-    indicators.forEach(indicator => {
-        indicator.addEventListener('click', function() {
-            const targetSlide = parseInt(this.getAttribute('data-slide'));
-            if (targetSlide !== currentSlide) {
-                navigateToSlide(targetSlide);
-            }
+    // Initialize each slideshow separately
+    slideshowContainers.forEach(container => {
+        const brand = container.getAttribute('data-brand');
+        const slides = container.querySelectorAll('.product-slide');
+        const indicators = container.querySelectorAll('.indicator');
+        const prevButtons = container.querySelectorAll('.slide-arrow.prev');
+        const nextButtons = container.querySelectorAll('.slide-arrow.next');
+        
+        if (!slides.length) return;
+        
+        // Each slideshow has its own current slide tracker
+        let currentSlide = 1;
+        const totalSlides = slides.length;
+        
+        // Initialize slide visibility
+        updateSlideVisibility();
+        
+        // Add event listeners to indicators for this slideshow
+        indicators.forEach(indicator => {
+            indicator.addEventListener('click', function() {
+                const targetSlide = parseInt(this.getAttribute('data-slide'));
+                if (targetSlide !== currentSlide) {
+                    navigateToSlide(targetSlide);
+                }
+            });
         });
-    });
-    
-    // Add event listeners to arrow buttons
-    prevButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            if (!this.hasAttribute('disabled')) {
+        
+        // Add event listeners to arrow buttons for this slideshow
+        prevButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.hasAttribute('disabled')) {
+                    navigateToSlide(currentSlide - 1);
+                }
+            });
+        });
+        
+        nextButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.hasAttribute('disabled')) {
+                    navigateToSlide(currentSlide + 1);
+                }
+            });
+        });
+        
+        // Add keyboard navigation for the currently visible slideshow
+        document.addEventListener('keydown', function(e) {
+            // Only process keyboard events if this slideshow is in viewport
+            if (!isElementInViewport(container)) return;
+            
+            if (e.key === 'ArrowLeft' && currentSlide > 1) {
                 navigateToSlide(currentSlide - 1);
-            }
-        });
-    });
-    
-    nextButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            if (!this.hasAttribute('disabled')) {
+            } else if (e.key === 'ArrowRight' && currentSlide < totalSlides) {
                 navigateToSlide(currentSlide + 1);
             }
         });
-    });
-    
-    // Add keyboard navigation
-    document.addEventListener('keydown', function(e) {
-        // Only process keyboard events if the products section is in viewport
-        const productsSection = document.getElementById('products');
-        if (!isElementInViewport(productsSection)) return;
         
-        if (e.key === 'ArrowLeft' && currentSlide > 1) {
-            navigateToSlide(currentSlide - 1);
-        } else if (e.key === 'ArrowRight' && currentSlide < totalSlides) {
-            navigateToSlide(currentSlide + 1);
-        }
-    });
-    
-    // Function to navigate to a specific slide
-    function navigateToSlide(targetSlide) {
-        if (targetSlide < 1 || targetSlide > totalSlides || targetSlide === currentSlide) return;
-        
-        // Add animation classes
-        const currentSlideEl = document.querySelector(`.product-slide[data-slide="${currentSlide}"]`);
-        const targetSlideEl = document.querySelector(`.product-slide[data-slide="${targetSlide}"]`);
-        
-        // Set animation direction based on navigation direction
-        if (targetSlide > currentSlide) {
-            currentSlideEl.classList.add('animate-out');
-            // Wait for animation to complete before showing new slide
-            setTimeout(() => {
-                currentSlideEl.classList.remove('animate-out');
+        // Function to navigate to a specific slide in this slideshow
+        function navigateToSlide(targetSlide) {
+            if (targetSlide < 1 || targetSlide > totalSlides || targetSlide === currentSlide) return;
+            
+            // Add animation classes
+            const currentSlideEl = container.querySelector(`.product-slide[data-slide="${currentSlide}"]`);
+            const targetSlideEl = container.querySelector(`.product-slide[data-slide="${targetSlide}"]`);
+            
+            // Set animation direction based on navigation direction
+            if (targetSlide > currentSlide) {
+                currentSlideEl.classList.add('animate-out');
+                // Wait for animation to complete before showing new slide
+                setTimeout(() => {
+                    currentSlideEl.classList.remove('animate-out');
+                    currentSlideEl.style.opacity = '0';
+                    currentSlideEl.style.visibility = 'hidden';
+                    currentSlideEl.style.position = 'absolute';
+                    currentSlideEl.style.zIndex = '0';
+                    currentSlideEl.style.pointerEvents = 'none';
+                    
+                    targetSlideEl.classList.add('animate-in');
+                    targetSlideEl.style.opacity = '1';
+                    targetSlideEl.style.visibility = 'visible';
+                    targetSlideEl.style.position = 'relative';
+                    targetSlideEl.style.zIndex = '1';
+                    targetSlideEl.style.pointerEvents = 'auto';
+                    
+                    setTimeout(() => {
+                        targetSlideEl.classList.remove('animate-in');
+                    }, 500);
+                    
+                    // Update current slide
+                    currentSlide = targetSlide;
+                    updateSlideVisibility();
+                    
+                    // Scroll slide into better view if needed
+                    if (!isElementFullyInViewport(targetSlideEl)) {
+                        smoothScrollToElement(targetSlideEl);
+                    }
+                }, 300);
+            } else {
                 currentSlideEl.style.opacity = '0';
                 currentSlideEl.style.visibility = 'hidden';
                 currentSlideEl.style.position = 'absolute';
@@ -419,138 +455,135 @@ function initProductCarousel() {
                 // Update current slide
                 currentSlide = targetSlide;
                 updateSlideVisibility();
-            }, 300);
-        } else {
-            currentSlideEl.style.opacity = '0';
-            currentSlideEl.style.visibility = 'hidden';
-            currentSlideEl.style.position = 'absolute';
-            currentSlideEl.style.zIndex = '0';
-            currentSlideEl.style.pointerEvents = 'none';
-            
-            targetSlideEl.classList.add('animate-in');
-            targetSlideEl.style.opacity = '1';
-            targetSlideEl.style.visibility = 'visible';
-            targetSlideEl.style.position = 'relative';
-            targetSlideEl.style.zIndex = '1';
-            targetSlideEl.style.pointerEvents = 'auto';
-            
-            setTimeout(() => {
-                targetSlideEl.classList.remove('animate-in');
-            }, 500);
-            
-            // Update current slide
-            currentSlide = targetSlide;
-            updateSlideVisibility();
+                
+                // Scroll slide into better view if needed
+                if (!isElementFullyInViewport(targetSlideEl)) {
+                    smoothScrollToElement(targetSlideEl);
+                }
+            }
         }
-    }
-    
-    // Function to update slide visibility, indicators, and buttons
-    function updateSlideVisibility() {
-        // Update indicators
-        indicators.forEach(indicator => {
-            const slideNum = parseInt(indicator.getAttribute('data-slide'));
-            if (slideNum === currentSlide) {
-                indicator.classList.add('active');
-            } else {
-                indicator.classList.remove('active');
-            }
-        });
         
-        // Update arrows
-        prevButtons.forEach(button => {
-            if (currentSlide === 1) {
-                button.setAttribute('disabled', '');
-            } else {
-                button.removeAttribute('disabled');
-            }
-        });
-        
-        nextButtons.forEach(button => {
-            if (currentSlide === totalSlides) {
-                button.setAttribute('disabled', '');
-            } else {
-                button.removeAttribute('disabled');
-            }
-        });
-    }
-    
-    // Touch swipe functionality for mobile
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
-    // Check if device supports touch
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    if (isTouch) {
-        slides.forEach(slide => {
-            slide.addEventListener('touchstart', function(e) {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
+        // Function to update slide visibility, indicators, and buttons
+        function updateSlideVisibility() {
+            // Update indicators for this slideshow
+            container.querySelectorAll('.indicator').forEach(indicator => {
+                const slideNum = parseInt(indicator.getAttribute('data-slide'));
+                if (slideNum === currentSlide) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
             
-            slide.addEventListener('touchend', function(e) {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            }, { passive: true });
-        });
-    }
-    
-    // Handle the swipe
-    function handleSwipe() {
-        const minSwipeDistance = 50;
-        const swipeDistance = touchEndX - touchStartX;
-        
-        if (swipeDistance > minSwipeDistance && currentSlide > 1) {
-            // Swiped right, go to previous slide
-            navigateToSlide(currentSlide - 1);
-        } else if (swipeDistance < -minSwipeDistance && currentSlide < totalSlides) {
-            // Swiped left, go to next slide
-            navigateToSlide(currentSlide + 1);
+            // Update arrows for this slideshow
+            container.querySelectorAll('.slide-arrow.prev').forEach(button => {
+                if (currentSlide === 1) {
+                    button.setAttribute('disabled', '');
+                } else {
+                    button.removeAttribute('disabled');
+                }
+            });
+            
+            container.querySelectorAll('.slide-arrow.next').forEach(button => {
+                if (currentSlide === totalSlides) {
+                    button.setAttribute('disabled', '');
+                } else {
+                    button.removeAttribute('disabled');
+                }
+            });
         }
-    }
-    
-    // Preload all product images for smooth transitions
-    function preloadImages() {
-        const images = document.querySelectorAll('.product-image img');
-        images.forEach(img => {
-            const imgSrc = img.getAttribute('src');
-            if (imgSrc) {
-                const preloadImg = new Image();
-                preloadImg.src = imgSrc;
-            }
-        });
-    }
-    
-    // Check if element is in viewport
-    function isElementInViewport(el) {
-        if (!el) return false;
         
-        const rect = el.getBoundingClientRect();
-        return (
-            rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.bottom >= 0 &&
-            rect.left <= (window.innerWidth || document.documentElement.clientWidth) &&
-            rect.right >= 0
-        );
-    }
-    
-    // Initialize by preloading images
-    preloadImages();
-    
-    // Add resize handler to ensure proper layout on screen size changes
-    window.addEventListener('resize', debounce(() => {
-        // Force redraw of slides on resize to ensure proper layout
-        slides.forEach(slide => {
-            if (parseInt(slide.getAttribute('data-slide')) === currentSlide) {
-                slide.style.opacity = '1';
-                slide.style.visibility = 'visible';
-                slide.style.position = 'relative';
-            } else {
-                slide.style.opacity = '0';
-                slide.style.visibility = 'hidden';
-                slide.style.position = 'absolute';
+        // Touch swipe functionality for mobile on this slideshow
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        // Check if device supports touch
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        if (isTouch) {
+            slides.forEach(slide => {
+                slide.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                slide.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, { passive: true });
+            });
+        }
+        
+        // Handle the swipe for this slideshow
+        function handleSwipe() {
+            const minSwipeDistance = 50;
+            const swipeDistance = touchEndX - touchStartX;
+            
+            if (swipeDistance > minSwipeDistance && currentSlide > 1) {
+                // Swiped right, go to previous slide
+                navigateToSlide(currentSlide - 1);
+            } else if (swipeDistance < -minSwipeDistance && currentSlide < totalSlides) {
+                // Swiped left, go to next slide
+                navigateToSlide(currentSlide + 1);
             }
-        });
-    }, 250));
+        }
+        
+        // Preload all product images for this slideshow
+        preloadImages();
+        
+        // Function to preload images for smoother transitions
+        function preloadImages() {
+            const images = container.querySelectorAll('.product-image img');
+            images.forEach(img => {
+                const imgSrc = img.getAttribute('src');
+                if (imgSrc) {
+                    const preloadImg = new Image();
+                    preloadImg.src = imgSrc;
+                }
+            });
+        }
+    });
+}
+
+// Utility Functions for Product Carousels
+
+// Check if element is partly in viewport
+function isElementInViewport(el) {
+    if (!el) return false;
+    
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.bottom >= 0 &&
+        rect.left <= (window.innerWidth || document.documentElement.clientWidth) &&
+        rect.right >= 0
+    );
+}
+
+// Check if element is fully in viewport
+function isElementFullyInViewport(el) {
+    if (!el) return false;
+    
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+// Smooth scroll to element
+function smoothScrollToElement(el) {
+    if (!el) return;
+    
+    const rect = el.getBoundingClientRect();
+    const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+    
+    // Scroll to position the element better in the viewport
+    window.scrollTo({
+        top: window.pageYOffset + rect.top - headerHeight - 50, // 50px extra space
+        behavior: 'smooth'
+    });
 }
 
 /**
