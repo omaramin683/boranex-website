@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initEnhancedFormValidation();
     enhanceMobileOverlays();
     initDesktopBrandLayouts();
+    initRotatingImages();
     
     // Handle window resize events
     window.addEventListener('resize', debounce(() => {
@@ -828,4 +829,42 @@ function enhanceSafariTouchInteraction() {
             });
         });
     }
+}
+
+/**
+ * Rotating Images Functionality
+ * Implements automatic image rotation in product displays
+ */
+function initRotatingImages() {
+    const rotatingImageContainers = document.querySelectorAll('.rotating-image-container');
+    
+    rotatingImageContainers.forEach(container => {
+        const images = container.querySelectorAll('.rotating-image');
+        if (!images.length) return;
+        
+        let currentImageIndex = 0;
+        const totalImages = images.length;
+        const rotationInterval = parseInt(container.dataset.interval || 5000); // Default 5 seconds
+        
+        // Set initial state
+        images.forEach((img, index) => {
+            if (index === 0) {
+                img.classList.add('active');
+            } else {
+                img.classList.remove('active');
+            }
+        });
+        
+        // Set up the rotation
+        setInterval(() => {
+            // Hide current image
+            images[currentImageIndex].classList.remove('active');
+            
+            // Move to next image
+            currentImageIndex = (currentImageIndex + 1) % totalImages;
+            
+            // Show next image
+            images[currentImageIndex].classList.add('active');
+        }, rotationInterval);
+    });
 }
